@@ -29,7 +29,9 @@ class DataOps:
         # Crop all faces found
         cropped_faces = []
         for (x, y, w, h) in faces:
-            cropped_faces.append(img[y : y + h, x : x + w])
+            x = x - 10
+            y = y - 10
+            cropped_faces.append(img[y : y + h + 50, x : x + w + 50])
         return cropped_faces
 
     def __write_show_img(self, name, count, img):
