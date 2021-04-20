@@ -1,3 +1,7 @@
+# Predicts recognition on Live camera input
+# with the help of predefined model, train
+# dataset and harcascade classifier.
+
 import cv2
 from tensorflow.io.gfile import listdir
 
@@ -15,6 +19,7 @@ cap = cv2.VideoCapture(0)
 face_classifier = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
+
 for i in range(100):
     ret, frame = cap.read()
     faces = face_classifier.detectMultiScale(frame, 1.3, 5)

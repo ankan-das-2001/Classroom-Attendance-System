@@ -1,3 +1,7 @@
+# Defines the tensorflow model in class Model
+# with methods to save, load, predict and predict
+# on OpenCv images.
+
 import tensorflow as tf
 import tensorflow.keras as keras
 from cv2 import resize
@@ -6,10 +10,35 @@ from numpy import argmax, expand_dims
 
 # define model
 class Model:
+    '''
+    Model Class defines tensorflow model
+
+    Methods
+    -------
+    create_model(flip="horizontal", rotation=(-0.3,0.3)):
+        Creates the model for face detection and recognition
+
+    fit(train_ds, epochs=10, val_ds=None):
+        Fits the model on tensorflow.data.Dataset
+
+    save_model(dir="savedmodel/"):
+        Saves the model in SavedModel format
+
+    load_model(dir="savedmodel/"):
+        Loads the model from SavedModel
+
+    predict(img):
+        Predicts the image recognition on tensor or tensorflow.data.Dataset
+
+    predict_on_cv(img):
+        Predicts the recognition on OpenCv image format
+    '''
+
     __checkpoint_path = "training/cp.ckpt"
     __device = tf.test.gpu_device_name()
     if __device == "":
         __device = "/cpu:0"
+
     with tf.device(__device):
         # define private layers, checkpoint dir, and callbacks
         __preprocess_input = keras.applications.mobilenet_v2.preprocess_input
@@ -22,10 +51,32 @@ class Model:
         ]
 
     def __init__(self, len_class, IMG_SHAPE=(224, 224, 3)):
+        '''
+        Construtor of `Model` class
+
+        Parameters
+        ----------
+        len_class: int
+            Length of class
+
+        IMG_SHAPE: tuple
+            Shape of the image to train or test (default is (224, 224, 3))
+        '''
         self.__IMG_SHAPE = IMG_SHAPE
         self.__len_class = len_class
 
     def create_model(self, flip="horizontal", rotation=(-0.3, 0.3)):
+        '''
+        Creates the Tensorflow model
+
+        Parameters
+        ----------
+        flip: str, horizontal | vertical
+            Flip value of the image (default is "horizontal")
+
+        rotation: tuple
+            Rotation range of the image (default is (-0.3, 0.3))
+        '''
         with tf.device(self.__device):
             # define augmentations
             self.__aug = keras.Sequential(
@@ -61,7 +112,20 @@ class Model:
         )
 
     def fit(self, train_ds, epochs=10, val_ds=None):
-        # fit model on tf.data.Dataset
+        '''
+        Fits model on tensorflow.data.Dataset
+
+        Parameters
+        ----------
+        train_ds: dataset
+            Training dataset
+
+        epochs: int
+            Number of times to run the model (default is 10)
+
+        val_ds: dataset
+            Validation dataset (default is None)
+        '''
         history = self.__model.fit(
             train_ds, epochs=epochs, validation_data=val_ds, callbacks=self.__callbacks
         )
@@ -69,19 +133,47 @@ class Model:
         return history
 
     def save_model(self, dir="savedmodel/"):
-        # save model in SavedModel format
+        '''
+        Saves the model in SavedModel format
+
+        Parameters
+        ----------
+        dir: str
+            Directory to save the model (default is "savedmodel/")
+        '''
         self.__model.save(dir)
 
     def load_model(self, dir="savedmodel/"):
-        # load model from SavedModel
+        '''
+        Load model from SavedModel
+
+        Parameters
+        ----------
+        dir: str
+            Directory to load model from (default is "savedmodel/")
+        '''
         self.__model = tf.keras.models.load_model(dir)
 
     def predict(self, img):
-        # predict on tensor or tf.data.Dataset
+        '''
+        Predicts recognition on tensor or tensorflow.data.Dataset
+
+        Parameters
+        ----------
+        img: 3D array
+            Image(tensor) to predict recognition
+        '''
         return argmax(self.__model.predict(img), axis=1)
 
     def predict_on_cv(self, img):
-        # predict on OpenCV image
+        '''
+        Predicts recognition on OpenCv image format
+
+        Parameters
+        ----------
+        img: 3D array
+            OpenCv image to predict recognition
+        '''
         temp = resize(img, (224, 224))
         temp = tf.convert_to_tensor(temp, dtype=tf.float32)
         temp = tf.expand_dims(temp, axis=0)

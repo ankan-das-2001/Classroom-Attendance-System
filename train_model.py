@@ -1,3 +1,6 @@
+# Train the model defined in Model class
+# with the dataset created by the DataOps class.
+
 import os
 
 import cv2
@@ -20,7 +23,14 @@ class_names = listdir("Datasets/train/")
 
 
 def get_train_ds():
-    # returns train tf.data.Dataset
+    '''
+    Get train tensorflow.data.Dataset
+
+    Returns
+    -------
+    train_ds: dataset
+        Train Dataset
+    '''
     train_ds = (
         image_dataset_from_directory(
             "Datasets/train/", shuffle=True, batch_size=BATCH_SIZE, image_size=IMG_SIZE
@@ -32,7 +42,14 @@ def get_train_ds():
 
 
 def get_val_ds():
-    # returns validation tf.data.Dataset
+    '''
+    Get validation tensorflow.data.Dataset
+
+    Returns
+    -------
+    val_ds: dataset
+        Validation Dataset
+    '''
     val_ds = image_dataset_from_directory(
         "Datasets/val/", shuffle=True, batch_size=BATCH_SIZE, image_size=IMG_SIZE
     ).prefetch(AUTOTUNE)
@@ -42,6 +59,7 @@ def get_val_ds():
 train_ds = get_train_ds()
 val_ds = get_val_ds()
 
+# initiate the model with length of class names
 model = Model(len(class_names))
 model.create_model()
 history = model.fit(train_ds, EPOCHS, val_ds)
